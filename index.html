@@ -7,43 +7,80 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <style>
+    :root {
+      --bg-color: #f4f4f4;
+      --container-bg: white;
+      --text-color: #333;
+      --input-border: #ccc;
+      --button-bg: #035872;
+      --button-hover: #02465a;
+      --table-border: #ddd;
+      --modal-bg: white;
+    }
+
+    .dark-mode {
+      --bg-color: #121212;
+      --container-bg: #1e1e1e;
+      --text-color: #f0f0f0;
+      --input-border: #444;
+      --button-bg: #0a8cb0;
+      --button-hover: #0b9ec7;
+      --table-border: #444;
+      --modal-bg: #2a2a2a;
+    }
+
     body {
       font-family: Arial, sans-serif;
-      background: #f4f4f4;
+      background: var(--bg-color);
       padding: 20px;
+      color: var(--text-color);
+      transition: background 0.5s ease, color 0.5s ease;
     }
 
     .container {
       max-width: 600px;
       margin: auto;
-      background: white;
+      background: var(--container-bg);
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .container.loaded {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     h1 {
       text-align: center;
-      color: #333;
+      color: var(--text-color);
     }
 
     input, select, button {
       padding: 10px;
       margin: 5px 0;
-      width: 100%;
-      border: 1px solid #ccc;
+      width: 95%;
+      border: 1px solid var(--input-border);
       border-radius: 5px;
+      background: var(--container-bg);
+      color: var(--text-color);
+      transition: all 0.3s ease;
     }
 
     button {
-      background-color: #035872;
+      background-color: var(--button-bg);
       color: white;
       cursor: pointer;
+      width: 100%;
       font-weight: bold;
+      border: none;
     }
 
     button:hover {
-      background-color: #035872;
+      background-color: var(--button-hover);
     }
 
     table {
@@ -54,7 +91,7 @@
 
     th, td {
       padding: 8px;
-      border: 1px solid #ddd;
+      border: 1px solid var(--table-border);
       text-align: center;
     }
 
@@ -63,7 +100,7 @@
       margin-top: 20px;
       font-size: 1.2em;
       font-weight: bold;
-      color: #222;
+      color: var(--text-color);
     }
 
     /* Modal styling */
@@ -78,21 +115,75 @@
       z-index: 1000;
       justify-content: center;
       align-items: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    #modal.show {
+      opacity: 1;
     }
 
     #modalContent {
-      background: white;
+      background: var(--modal-bg);
       padding: 20px;
       border-radius: 10px;
       width: 90%;
       max-width: 400px;
       position: relative;
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+      color: var(--text-color);
+    }
+
+    #modal.show #modalContent {
+      transform: scale(1);
+    }
+
+    /* Theme toggle button */
+    .theme-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--button-bg);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      border: none;
+      transition: all 0.3s ease;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .theme-toggle.loaded {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .theme-toggle:hover {
+      background: var(--button-hover);
+      transform: translateY(-2px) scale(1.05);
+    }
+
+    /* Animation for table rows */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    #subjectsTable tbody tr {
+      animation: fadeIn 0.3s ease forwards;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Semester GPA Calculator</h1>
+    <h1>SGPA Calculator</h1>
     <label>Subject Name</label>
     <input type="text" id="subject" placeholder="e.g. Calculus" />
 
@@ -144,8 +235,29 @@
     </div>
   </div>
 
+  <button class="theme-toggle" onclick="toggleTheme()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="5"></circle>
+      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+    </svg>
+  </button>
+
   <script>
+    // Initialize variables
     let subjects = [];
+    let darkMode = false;
+
+    // Wait for DOM to load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Show container with animation
+      document.querySelector('.container').classList.add('loaded');
+      document.querySelector('.theme-toggle').classList.add('loaded');
+      
+      // Check for saved theme preference
+      if (localStorage.getItem('darkMode') === 'true') {
+        toggleTheme();
+      }
+    });
 
     function addSubject() {
       const subject = document.getElementById('subject').value;
@@ -161,17 +273,22 @@
       updateTable();
       calculateGPA();
 
+      // Clear inputs
       document.getElementById('subject').value = '';
       document.getElementById('grade').value = '4';
       document.getElementById('credits').value = '';
+      
+      // Focus on subject input for next entry
+      document.getElementById('subject').focus();
     }
 
     function updateTable() {
       const tbody = document.querySelector("#subjectsTable tbody");
       tbody.innerHTML = '';
 
-      subjects.forEach(s => {
+      subjects.forEach((s, index) => {
         const row = document.createElement('tr');
+        row.style.animationDelay = `${index * 0.1}s`;
         row.innerHTML = `
           <td>${s.subject}</td>
           <td>${getGradeLetter(s.grade)}</td>
@@ -192,6 +309,13 @@
 
       const gpa = totalCredits ? (totalPoints / totalCredits).toFixed(2) : '0.00';
       document.getElementById('gpaResult').innerText = `GPA: ${gpa}`;
+      
+      // Add animation to GPA result
+      const resultElement = document.getElementById('gpaResult');
+      resultElement.style.transform = 'scale(1.1)';
+      setTimeout(() => {
+        resultElement.style.transform = 'scale(1)';
+      }, 300);
     }
 
     function getGradeLetter(grade) {
@@ -209,6 +333,9 @@
         return;
       }
       document.getElementById('modal').style.display = 'flex';
+      setTimeout(() => {
+        document.getElementById('modal').classList.add('show');
+      }, 10);
     }
 
     function generatePDF() {
@@ -252,7 +379,33 @@
     }
 
     function closeModal() {
-      document.getElementById('modal').style.display = 'none';
+      document.getElementById('modal').classList.remove('show');
+      setTimeout(() => {
+        document.getElementById('modal').style.display = 'none';
+      }, 300);
+    }
+
+    function toggleTheme() {
+      darkMode = !darkMode;
+      document.body.classList.toggle('dark-mode', darkMode);
+      localStorage.setItem('darkMode', darkMode);
+      
+      // Update theme toggle icon
+      const themeToggle = document.querySelector('.theme-toggle');
+      themeToggle.innerHTML = darkMode ? 
+        `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>` :
+        `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+        </svg>`;
+      
+      // Add animation to theme toggle
+      themeToggle.style.transform = 'scale(1.1)';
+      setTimeout(() => {
+        themeToggle.style.transform = 'scale(1)';
+      }, 200);
     }
   </script>
 </body>
