@@ -3,206 +3,216 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <title>SGPA Calculator</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+    
     :root {
-      --bg-color: #f4f4f4;
-      --container-bg: white;
-      --text-color: #333;
-      --input-border: #ccc;
-      --button-bg: #035872;
-      --button-hover: #02465a;
-      --table-border: #ddd;
-      --modal-bg: white;
+      --glass-blur: 12px;
+      --glass-saturate: 180%;
+      --glass-brightness: 100%;
+      --glass-bg-light: rgba(255, 255, 255, 0.25);
+      --glass-bg-dark: rgba(30, 30, 30, 0.25);
+      --glass-border-light: rgba(255, 255, 255, 0.18);
+      --glass-border-dark: rgba(0, 0, 0, 0.18);
     }
-
-    .dark-mode {
-      --bg-color: #121212;
-      --container-bg: #1e1e1e;
-      --text-color: #f0f0f0;
-      --input-border: #444;
-      --button-bg: #0a8cb0;
-      --button-hover: #0b9ec7;
-      --table-border: #444;
-      --modal-bg: #2a2a2a;
-    }
-
+    
     body {
-      font-family: Arial, sans-serif;
-      background: var(--bg-color);
+      background-image: url( '/blob-scene-haikei.svg' );
+      font-family: 'Poppins', sans-serif;
+      /*background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);*/
+      min-height: 100vh;
       padding: 20px;
-      color: var(--text-color);
-      transition: background 0.5s ease, color 0.5s ease;
+      margin: 0;
+      background-attachment: fixed;
     }
 
     .container {
       max-width: 600px;
-      margin: auto;
-      background: var(--container-bg);
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.5s ease, transform 0.5s ease;
+      margin: 0 auto;
+      padding: 25px;
+      border-radius: 16px;
+      backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+      background-color: var(--glass-bg-light);
+      border: 1px solid var(--glass-border-light);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+      transition: all 0.5s ease;
     }
 
-    .container.loaded {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    h1 {
-      text-align: center;
-      color: var(--text-color);
-    }
-
+    /* Glass Form Elements */
     input, select, button {
-      padding: 10px;
-      margin: 5px 0;
-      width: 95%;
-      border: 1px solid var(--input-border);
-      border-radius: 5px;
-      background: var(--container-bg);
-      color: var(--text-color);
+      padding: 12px 15px;
+      margin: 8px 0;
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 16px;
       transition: all 0.3s ease;
+      backdrop-filter: blur(5px);
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
     }
 
     button {
-      background-color: var(--button-bg);
+      background: linear-gradient(135deg, rgba(52, 152, 219, 0.8), rgba(41, 128, 185, 0.8));
       color: white;
-      cursor: pointer;
-      width: 100%;
-      font-weight: bold;
       border: none;
+      cursor: pointer;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      margin-top: 10px;
     }
 
     button:hover {
-      background-color: var(--button-hover);
+      background: linear-gradient(135deg, rgba(52, 152, 219, 1), rgba(41, 128, 185, 1));
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     }
 
+    h2 {
+      text-align: center;
+      color: white;
+      margin-bottom: 25px;
+      font-weight: 600;
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Glass Table */
     table {
       width: 100%;
+      margin-top: 25px;
       border-collapse: collapse;
-      margin-top: 15px;
+      border-radius: 12px;
+      overflow: hidden;
+      backdrop-filter: blur(var(--glass-blur));
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     }
 
-    th, td {
-      padding: 8px;
-      border: 1px solid var(--table-border);
+    th {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      font-weight: 500;
+      padding: 12px;
       text-align: center;
+    }
+
+    td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    tr:hover {
+      background: rgba(255, 255, 255, 0.1);
     }
 
     .result {
+      margin: 25px 0;
       text-align: center;
-      margin-top: 20px;
-      font-size: 1.2em;
-      font-weight: bold;
-      color: var(--text-color);
-    }
-
-    /* Modal styling */
-    #modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    #modal.show {
-      opacity: 1;
-    }
-
-    #modalContent {
-      background: var(--modal-bg);
-      padding: 20px;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 400px;
-      position: relative;
-      transform: scale(0.9);
-      transition: transform 0.3s ease;
-      color: var(--text-color);
-    }
-
-    #modal.show #modalContent {
-      transform: scale(1);
-    }
-
-    /* Theme toggle button */
-    .theme-toggle {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background: var(--button-bg);
+      font-size: 1.8em;
+      font-weight: 600;
       color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-      border: none;
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       transition: all 0.3s ease;
-      opacity: 0;
-      transform: translateY(20px);
     }
 
-    .theme-toggle.loaded {
-      opacity: 1;
-      transform: translateY(0);
+    /* Dark Mode Adjustments */
+    .dark-mode {
+      background-image: url( '/blob-scene-haikei.svg' );
     }
 
-    .theme-toggle:hover {
-      background: var(--button-hover);
-      transform: translateY(-2px) scale(1.05);
+    .dark-mode .container {
+      background-color: var(--glass-bg-dark);
+      border-color: var(--glass-border-dark);
     }
 
-    /* Animation for table rows */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateX(-10px); }
-      to { opacity: 1; transform: translateX(0); }
+    .dark-mode input,
+    .dark-mode select {
+      background: rgba(0, 0, 0, 0.2);
+      border-color: rgba(0, 0, 0, 0.3);
+      color: #f0f0f0;
     }
 
-    #subjectsTable tbody tr {
-      animation: fadeIn 0.3s ease forwards;
+    .dark-mode table {
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    .dark-mode th {
+      background: rgba(0, 0, 0, 0.25);
+    }
+
+    footer {
+      margin-top: 30px;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.9em;
+    }
+
+    /* Delete button styling */
+    .delete-btn {
+      background: rgba(231, 76, 60, 0.8) !important;
+      padding: 5px 10px !important;
+      border-radius: 6px !important;
+    }
+
+    .delete-btn:hover {
+      background: rgba(231, 76, 60, 1) !important;
+    }
+
+    /* Reset button styling */
+    .reset-btn {
+      background: rgba(136, 136, 136, 0.8) !important;
+    }
+
+    .reset-btn:hover {
+      background: rgba(136, 136, 136, 1) !important;
     }
   </style>
 </head>
+
 <body>
   <div class="container">
-    <h1>SGPA Calculator</h1>
-    <label>Subject Name</label>
-    <input type="text" id="subject" placeholder="e.g. Calculus" />
+    <h2>SGPA Calculator</h2>
+    <label style="color: #f0f0f0;" for="subject">Subject Name:</label>
+    <input type="text" id="subject" placeholder="e.g. Mathematics">
 
-    <label>Grade</label>
+    <label style="color: #f0f0f0;" for="grade">Grade:</label>
     <select id="grade">
-      <option value="4">A</option>
-      <option value="3.5">B+</option>
-      <option value="3">B</option>
-      <option value="2.5">C+</option>
-      <option value="2">C</option>
-      <option value="1">D</option>
-      <option value="0">F</option>
+      <option style="color: #000000;" value="4">A</option>
+      <option style="color: #000000;" value="3.5">B+</option>
+      <option style="color: #000000;" value="3">B</option>
+      <option style="color: #000000;" value="2.5">C+</option>
+      <option style="color: #000000;" value="2">C</option>
+      <option style="color: #000000;" value="1.5">D+</option>
+      <option style="color: #000000;" value="1">D</option>
+      <option style="color: #000000;" value="0">F</option>
     </select>
 
-    <label>Credit Hours</label>
-    <input type="number" id="credits" min="1" max="5" placeholder="e.g. 3" />
+    <label style="color: #f0f0f0;" for="credits">Credit Hours:</label>
+    <input type="number" id="credits" min="1" max="5" placeholder="e.g. 3">
 
-    <button onclick="addSubject()">Add Subject</button>
-    <button onclick="downloadPDF()">Download Result PDF</button>
+    <button onclick="addSubject()"><i class="fas fa-plus"></i> Add Subject</button>
+    <button onclick="resetAll()" class="reset-btn"><i class="fas fa-trash-alt"></i> Reset All</button>
+    <button onclick="toggleTheme()"><i class="fas fa-moon"></i> Toggle Theme</button>
+
+    <div class="result" id="gpaResult">GPA: 0.00</div>
 
     <table id="subjectsTable">
       <thead>
@@ -210,75 +220,53 @@
           <th>Subject</th>
           <th>Grade</th>
           <th>Credit Hours</th>
+          <th>Delete</th>
         </tr>
       </thead>
-      <tbody></tbody>
+      <tbody>
+        <!-- Subjects will be added here -->
+      </tbody>
     </table>
-
-    <div class="result" id="gpaResult">GPA: 0.00</div>
   </div>
-
-  <!-- Modal Form -->
-  <div id="modal">
-    <div id="modalContent">
-      <h2>Enter Student Information</h2>
-      <label>Name</label>
-      <input type="text" id="studentName" required />
-      <label>Class</label>
-      <input type="text" id="studentClass" required />
-      <label>Section</label>
-      <input type="text" id="studentSection" required />
-      <label>Session</label>
-      <input type="text" id="studentSession" required />
-      <button onclick="generatePDF()" style="margin-top:10px;">Download PDF</button>
-      <button onclick="closeModal()" style="background:#ccc; color:#000; margin-top:5px;">Cancel</button>
-    </div>
-  </div>
-
-  <button class="theme-toggle" onclick="toggleTheme()">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="5"></circle>
-      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
-    </svg>
-  </button>
 
   <script>
-    // Initialize variables
     let subjects = [];
-    let darkMode = false;
+    let darkMode = JSON.parse(localStorage.getItem('darkMode')) || false;
 
-    // Wait for DOM to load
-    document.addEventListener('DOMContentLoaded', function() {
-      // Show container with animation
-      document.querySelector('.container').classList.add('loaded');
-      document.querySelector('.theme-toggle').classList.add('loaded');
-      
-      // Check for saved theme preference
-      if (localStorage.getItem('darkMode') === 'true') {
-        toggleTheme();
+    // Apply dark mode if enabled
+    if (darkMode) {
+      document.body.classList.add('dark-mode');
+    }
+
+    function getGradeLetter(grade) {
+      switch (grade) {
+        case 4: return 'A';
+        case 3.5: return 'B+';
+        case 3: return 'B';
+        case 2.5: return 'C+';
+        case 2: return 'C';
+        case 1.5: return 'D+';
+        case 1: return 'D';
+        default: return 'F';
       }
-    });
+    }
 
     function addSubject() {
-      const subject = document.getElementById('subject').value;
+      const subject = document.getElementById('subject').value.trim();
       const grade = parseFloat(document.getElementById('grade').value);
       const credits = parseInt(document.getElementById('credits').value);
 
-      if (!subject || isNaN(grade) || isNaN(credits) || credits <= 0) {
-        alert("Please enter valid subject, grade and credit hours.");
+      if (subject === '' || isNaN(grade) || isNaN(credits)) {
+        alert("Please fill in all fields correctly.");
         return;
       }
 
       subjects.push({ subject, grade, credits });
+      document.getElementById('subject').value = '';
+      document.getElementById('credits').value = '';
+
       updateTable();
       calculateGPA();
-
-      // Clear inputs
-      document.getElementById('subject').value = '';
-      document.getElementById('grade').value = '4';
-      document.getElementById('credits').value = '';
-      
-      // Focus on subject input for next entry
       document.getElementById('subject').focus();
     }
 
@@ -288,14 +276,20 @@
 
       subjects.forEach((s, index) => {
         const row = document.createElement('tr');
-        row.style.animationDelay = `${index * 0.1}s`;
         row.innerHTML = `
           <td>${s.subject}</td>
           <td>${getGradeLetter(s.grade)}</td>
           <td>${s.credits}</td>
+          <td><button onclick="removeSubject(${index})" class="delete-btn"><i class="fas fa-trash"></i></button></td>
         `;
         tbody.appendChild(row);
       });
+    }
+
+    function removeSubject(index) {
+      subjects.splice(index, 1);
+      updateTable();
+      calculateGPA();
     }
 
     function calculateGPA() {
@@ -308,80 +302,19 @@
       });
 
       const gpa = totalCredits ? (totalPoints / totalCredits).toFixed(2) : '0.00';
-      document.getElementById('gpaResult').innerText = `GPA: ${gpa}`;
-      
-      // Add animation to GPA result
       const resultElement = document.getElementById('gpaResult');
+      resultElement.innerText = `GPA: ${gpa}`;
+
+      // Color coding based on GPA
+      resultElement.style.color =
+        gpa >= 3.5 ? '#a1ffa1' :  // Light green
+        gpa >= 2.5 ? '#ffd166' :  // Yellow
+        '#ff6b6b';                // Red
+
+      // Animation
       resultElement.style.transform = 'scale(1.1)';
       setTimeout(() => {
         resultElement.style.transform = 'scale(1)';
-      }, 300);
-    }
-
-    function getGradeLetter(grade) {
-      const map = {
-        4: 'A', 3.5: 'B+', 3: 'B',
-        2.5: 'C+', 2: 'C',
-        1: 'D', 0: 'F'
-      };
-      return map[grade] || 'N/A';
-    }
-
-    function downloadPDF() {
-      if (subjects.length === 0) {
-        alert("Add at least one subject to download the result.");
-        return;
-      }
-      document.getElementById('modal').style.display = 'flex';
-      setTimeout(() => {
-        document.getElementById('modal').classList.add('show');
-      }, 10);
-    }
-
-    function generatePDF() {
-      const name = document.getElementById('studentName').value.trim();
-      const className = document.getElementById('studentClass').value.trim();
-      const section = document.getElementById('studentSection').value.trim();
-      const session = document.getElementById('studentSession').value.trim();
-
-      if (!name || !className || !section || !session) {
-        alert("Please fill in all fields.");
-        return;
-      }
-
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-
-      doc.setFontSize(16);
-      doc.text("Semester GPA Report", 70, 15);
-      doc.setFontSize(12);
-      doc.text(`Name: ${name}`, 10, 30);
-      doc.text(`Class: ${className}`, 10, 38);
-      doc.text(`Section: ${section}`, 10, 46);
-      doc.text(`Session: ${session}`, 10, 54);
-
-      const rows = subjects.map(s => [
-        s.subject,
-        getGradeLetter(s.grade),
-        s.credits
-      ]);
-
-      doc.autoTable({
-        head: [["Subject", "Grade", "Credit Hours"]],
-        body: rows,
-        startY: 65
-      });
-
-      doc.text(`Final GPA: ${document.getElementById("gpaResult").innerText.replace("GPA: ", "")}`, 10, doc.lastAutoTable.finalY + 10);
-      doc.save(`GPA_Report_${name || "Student"}.pdf`);
-
-      closeModal();
-    }
-
-    function closeModal() {
-      document.getElementById('modal').classList.remove('show');
-      setTimeout(() => {
-        document.getElementById('modal').style.display = 'none';
       }, 300);
     }
 
@@ -389,24 +322,30 @@
       darkMode = !darkMode;
       document.body.classList.toggle('dark-mode', darkMode);
       localStorage.setItem('darkMode', darkMode);
-      
-      // Update theme toggle icon
-      const themeToggle = document.querySelector('.theme-toggle');
-      themeToggle.innerHTML = darkMode ? 
-        `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-        </svg>` :
-        `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="5"></circle>
-          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
-        </svg>`;
-      
-      // Add animation to theme toggle
-      themeToggle.style.transform = 'scale(1.1)';
-      setTimeout(() => {
-        themeToggle.style.transform = 'scale(1)';
-      }, 200);
     }
+
+    function resetAll() {
+      if (confirm("Are you sure you want to clear all subjects and GPA?")) {
+        subjects = [];
+        updateTable();
+        calculateGPA();
+      }
+    }
+
+    // Add subject on Enter key press
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && document.activeElement.tagName !== "TEXTAREA") {
+        addSubject();
+      }
+    });
+
+    // Focus on first input when page loads
+    window.onload = function() {
+      document.getElementById('subject').focus();
+    };
   </script>
+  <footer>
+    &copy; 2025 SGPA Calculator by Shahzaib. All rights reserved.
+  </footer>
 </body>
 </html>
